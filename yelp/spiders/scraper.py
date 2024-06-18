@@ -1,9 +1,9 @@
-from typing import Iterable
-
-import scrapy
 import json
-
+import scrapy
+from typing import Iterable
+from dateutil import parser
 from scrapy import Request
+from ..items import ReviewItem, AnswerItem, OwnerAnswerItem
 
 
 class ScraperSpider(scrapy.Spider):
@@ -23,6 +23,33 @@ class ScraperSpider(scrapy.Spider):
 
     def parse_reviews(self, response):
         response_data = json.loads(response.text)
+        reviews = response_data['data']['business']['reviews']['edges']
+        for item in reviews:
+            review = ReviewItem()
+            review['author'] = item['node']['author']['displayName']
+            review['review_text'] = item['node']['text']['full']
+            review['stars'] = item['node']['rating']
+            review['date'] = parser.parse(item['node']['createdAt']['localDateTimeForBusiness'])
+            if len(item['node']['businessPhotos']) >= 1:
+                photo_urls = []
+                for photo in item['node']['businessPhotos']:
+                    photo_url = photo['photoUrl']['url']
+                    photo_urls.append(photo_url)
+                review['photo_urls'] = photo_urls
+            if len(item['node']['previousReviews']) >= 1:
+                review['answers'] = []
+                for subitem in item['node']['previousReviews']:
+                    answer = AnswerItem()
+                    answer['answer_username'] = subitem['author']['displayName']
+                    answer['answer_text'] = subitem['text']['full']
+                    answer['answer_date'] = subitem['createdAt']['localDateTimeForBusiness']
+                    answer['answer_stars'] = subitem['rating']
+                    review['answers'].append(answer)
+
+            yield review
+
+        next_page = response_data['data']['business']['reviews']['pageInfo']['hasNextPage']
+        this_page = response_data['data']['business']['reviews']['pageInfo']['endCursor']
         yield response_data
 
     @staticmethod
@@ -31,7 +58,7 @@ class ScraperSpider(scrapy.Spider):
             'operationName': 'GetBusinessReviewFeed',
             'variables': {
                 'encBizId': 'JHQPPOksb_iMklR0NAeZUQ',
-                'reviewsPerPage': 10,
+                'reviewsPerPage': 20,
                 'selectedReviewEncId': '',
                 'hasSelectedReview': False,
                 'sortBy': 'DATE_DESC',
