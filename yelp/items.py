@@ -24,4 +24,6 @@ class AnswerItem(scrapy.Item):
 
 
 class OwnerAnswerItem(scrapy.Item):
-    pass
+    owner = scrapy.Field()
+    owner_answer_text = scrapy.Field()
+    owner_answer_date = scrapy.Field()
