@@ -3,7 +3,7 @@ import scrapy
 from typing import Iterable
 from dateutil import parser
 from scrapy import Request
-from ..items import ReviewItem, AnswerItem, OwnerAnswerItem
+from ..items import ReviewItem, AnswerItem
 
 
 class ScraperSpider(scrapy.Spider):
@@ -50,7 +50,15 @@ class ScraperSpider(scrapy.Spider):
 
         next_page = response_data['data']['business']['reviews']['pageInfo']['hasNextPage']
         this_page = response_data['data']['business']['reviews']['pageInfo']['endCursor']
-        yield response_data
+        if next_page:
+            json_data = ScraperSpider.get_json_data(after=this_page)
+            yield scrapy.Request(
+                url='https://www.yelp.com/gql/batch',
+                method='POST',
+                body=json_data,
+                headers={'Content-Type': 'application/json'},
+                callback=self.parse_reviews
+            )
 
     @staticmethod
     def get_json_data(after=None):
