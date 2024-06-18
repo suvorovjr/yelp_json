@@ -13,7 +13,6 @@ class ReviewItem(scrapy.Item):
     date = scrapy.Field()
     photo_urls = scrapy.Field()
     answers = scrapy.Field()
-    owner_answers = scrapy.Field()
 
 
 class AnswerItem(scrapy.Item):
@@ -21,9 +20,3 @@ class AnswerItem(scrapy.Item):
     answer_text = scrapy.Field()
     answer_date = scrapy.Field()
     answer_stars = scrapy.Field()
-
-
-class OwnerAnswerItem(scrapy.Item):
-    owner = scrapy.Field()
-    owner_answer_text = scrapy.Field()
-    owner_answer_date = scrapy.Field()
