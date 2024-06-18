@@ -17,7 +17,10 @@ class ReviewItem(scrapy.Item):
 
 
 class AnswerItem(scrapy.Item):
-    pass
+    answer_username = scrapy.Field()
+    answer_text = scrapy.Field()
+    answer_date = scrapy.Field()
+    answer_stars = scrapy.Field()
 
 
 class OwnerAnswerItem(scrapy.Item):
